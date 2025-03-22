@@ -1,5 +1,20 @@
 # backend
 
+## 구조
+
+/bacbend
+│── main.py                 # Flask 앱 실행 및 엔드포인트 등록
+│── handle_scan_request.py   # /scan 요청 처리
+│── handle_get_result.py     # /scan-result 요청 처리
+│── database.py              # DB 연결
+│── config.json              # 설정 파일 -> config.template.json을 변경해야함.
+
+아래는 자동 생성됨.
+│── uploads/                 # 업로드된 소스 코드 파일 저장
+│── results/                 # 분석 결과 파일 저장
+│── db.sqlite3               # SQLite 데이터베이스
+
+
 ## 진행 상황
     
     서버 실행 후

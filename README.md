@@ -4,11 +4,11 @@
     
     서버 실행 후
     curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c"
-    위와 같이 요청청시 취약점 분석 후 json파일로 저장함.
+    위와 같이 요청시 취약점 분석 후 json파일로 저장함.
     uploads 폴더에 피분석 소스코드 파일 저장됨.
     분석 결과는 results 폴더에 저장됨.
 
-    curl -X GET http://127.0.0.1:5000/scan-result
+    curl -X GET http://127.0.0.1:5000/scan-result/file_id
     위와 같이 요청시 최근 분석 후 저장된 code-scan-result_translated.json 파일을 가져옴.
     
 
@@ -33,4 +33,4 @@
 
     서버 실행 후 아래와 같이 요청
     curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c"
-    curl -X GET http://127.0.0.1:5000/scan-result
+    curl -X GET http://127.0.0.1:5000/scan-result/file_id

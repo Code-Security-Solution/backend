@@ -2,7 +2,7 @@
 
 ## 구조
 
-    /bacbend
+    /backend
     │── main.py                  # Flask 앱 실행 및 엔드포인트 등록
     │── handle_scan_request.py   # /scan 요청 처리
     │── handle_get_result.py     # /scan-result 요청 처리

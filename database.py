@@ -12,7 +12,7 @@ def init_db():
             file_path TEXT NOT NULL,
             result_file TEXT NOT NULL,
             translated_result_file TEXT NOT NULL,
-            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()

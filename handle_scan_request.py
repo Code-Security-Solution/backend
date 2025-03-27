@@ -25,25 +25,29 @@ def scan_code():
     if 'source_code' not in request.files:
         return jsonify({'error': '소스코드 파일이 업로드되지 않았습니다.'}), 400
     
-    file = request.files['source_code']
-    if file.filename == '':
-        return jsonify({'error': '유효한 파일명이 없습니다.'}), 400
+    files = request.files.getlist('source_code')  # 여러 개의 파일 받기
+    
+    if not files or all(f.filename == '' for f in files):
+        return jsonify({'error': '유효한 소스코드 파일이 없습니다.'}), 400
     
     # 고유 폴더 생성 (각 요청마다 별도 폴더)
     file_id = str(uuid.uuid4())
     upload_folder = os.path.join(UPLOAD_DIR, file_id)
     os.makedirs(upload_folder, exist_ok=True)
 
-    file_path = os.path.join(upload_folder, file.filename)
+    file_paths = []
+
+    # 여러 개의 파일 저장
+    for file in files:
+        file_path = os.path.join(upload_folder, file.filename)
+        file.save(file_path)
+        file_paths.append(file_path)
+
     result_file = os.path.join(RESULT_DIR, f"{file_id}.json")
     translated_result_file = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
 
-    # 파일 저장
-    file.save(file_path)
-
     # 해당 폴더에서만 스캔 실행
     command = [CLI_EXECUTABLE, 'scan', 'semgrep', upload_folder, result_file]
-
     # print(f"실행할 명령어: {' '.join(command)}")  # 명령어 확인 로그 - 디버그용
 
     try:
@@ -57,11 +61,15 @@ def scan_code():
         return jsonify({'error': '분석 엔진 실행 중 오류 발생', 'details': e.stderr}), 500
     
     # DB에 정보 저장
-    insert_scan_record(file_id, file_path, result_file, translated_result_file)
+    insert_scan_record(file_id, ", ".join(file_paths), result_file, translated_result_file)
 
 
     # # 생성된 폴더 삭제하려면 추가
     # import shutil
     # shutil.rmtree(upload_folder, ignore_errors=True)
 
-    return jsonify({'message': '파일이 성공적으로 분석되었습니다.', 'file_id': file_id})
+    return jsonify({
+            'message': '파일이 성공적으로 분석되었습니다.',
+            'file_id': file_id,
+            'uploaded_files': file_paths
+        })

@@ -47,10 +47,13 @@
 
 
     서버 실행 후 아래와 같이 요청
-    curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c"
+    curl -X POST http://127.0.0.1:5000/scan \
+    -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c"
         # ㄴ 하나의 소스코드를 요청할 때
     
-    curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c" -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Code Execution\Discourse_SNS_webhook_RCE.rb"
+    curl -X POST http://127.0.0.1:5000/scan \
+    -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c" \
+    -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Code Execution\Discourse_SNS_webhook_RCE.rb"
         # ㄴ 둘 이상의 소스코드를 요청할 때
 
     curl -X GET http://127.0.0.1:5000/scan-result/<file_id>

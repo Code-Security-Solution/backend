@@ -61,7 +61,7 @@ def scan_code():
         return jsonify({'error': '분석 엔진 실행 중 오류 발생', 'details': e.stderr}), 500
     
     # DB에 정보 저장
-    insert_scan_record(file_id, ", ".join(file_paths), result_file, translated_result_file)
+    insert_scan_record(file_id, file_paths, result_file, translated_result_file)
 
 
     # # 생성된 폴더 삭제하려면 추가

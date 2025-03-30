@@ -29,7 +29,8 @@
 
 
 ## 실행 방법
-
+    docker 실행, MongoDB 실행
+    
     git clone https://github.com/Code-Security-Solution/backend.git
     
     config.template.json파일에서 CLI_EXECUTABLE 에 Code_Nova_Guardian.exe 의 경로를 입력해야함.

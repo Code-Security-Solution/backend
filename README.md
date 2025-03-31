@@ -12,7 +12,6 @@
     아래는 자동 생성됨.
     │── uploads/                 # 업로드된 소스 코드 파일 저장
     │── results/                 # 분석 결과 파일 저장
-    │── db.sqlite3               # SQLite 데이터베이스
 
 
 ## 진행 상황
@@ -23,10 +22,12 @@
     uploads 폴더에 피분석 소스코드 파일 저장됨.
     분석 결과는 results 폴더에 저장됨.
 
-    curl -X GET http://127.0.0.1:5000/scan-result/file_id
-    위와 같이 요청시 최근 분석 후 저장된 code-scan-result_translated.json 파일을 가져옴.
-    
+    curl -X GET http://127.0.0.1:5000/scan-result/<file_id>
+    위와 같이 요청시 <file_id>_translated.json 파일을 가져옴.
 
+    curl -X GET http://127.0.0.1:5000/summary-report/<file_id>
+    위와 같이 요청시 <file_id>_translated.json 을 가공하여 요약 레포트를 가져옴
+    
 
 ## 실행 방법
     docker 실행, MongoDB 실행

@@ -23,12 +23,26 @@ def scan_code():
     /scan
     """
     if 'source_code' not in request.files:
-        return jsonify({'error': '소스코드 파일이 업로드되지 않았습니다.'}), 400
+        return jsonify({
+            'status': 400,
+            'message': '소스코드 파일이 업로드되지 않았습니다.',
+            'result':{
+                'file_id': None,
+                'uploaded_files': None
+                }
+        }), 400
     
     files = request.files.getlist('source_code')  # 여러 개의 파일 받기
     
     if not files or all(f.filename == '' for f in files):
-        return jsonify({'error': '유효한 소스코드 파일이 없습니다.'}), 400
+        return jsonify({
+            'status': 400,
+            'message': '유효한 소스코드 파일이 없습니다.',
+            'result':{
+                'file_id': None,
+                'uploaded_files': None
+                }
+        }), 400
     
     # 고유 폴더 생성 (각 요청마다 별도 폴더)
     file_id = str(uuid.uuid4())
@@ -58,8 +72,15 @@ def scan_code():
         # print("STDERR:", result.stderr)  # 표준 에러 로그 확인 - 디버그용
     except subprocess.CalledProcessError as e:
         print(f"CLI 실행 오류 발생: {e.stderr}")  # CLI 오류 로그 확인
-        return jsonify({'error': '분석 엔진 실행 중 오류 발생', 'details': e.stderr}), 500
-    
+        return jsonify({
+            'status': 500,
+            'message': '분석 엔진 실행 중 오류 발생.',
+            'result':{
+                'file_id': None,
+                'uploaded_files': None
+                }
+        }), 500
+
     # DB에 정보 저장
     insert_scan_record(file_id, file_paths, result_file, translated_result_file)
 
@@ -69,7 +90,10 @@ def scan_code():
     # shutil.rmtree(upload_folder, ignore_errors=True)
 
     return jsonify({
+            'status': 200,
             'message': '파일이 성공적으로 분석되었습니다.',
-            'file_id': file_id,
-            'uploaded_files': file_paths
+            'result':{
+                'file_id': file_id,
+                'uploaded_files': file_paths
+                }
         })

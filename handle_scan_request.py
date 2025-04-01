@@ -27,8 +27,6 @@ def scan_code():
             'status': 400,
             'message': '소스코드 파일이 업로드되지 않았습니다.',
             'result':{
-                'file_id': None,
-                'uploaded_files': None
                 }
         }), 400
     
@@ -39,8 +37,6 @@ def scan_code():
             'status': 400,
             'message': '유효한 소스코드 파일이 없습니다.',
             'result':{
-                'file_id': None,
-                'uploaded_files': None
                 }
         }), 400
     
@@ -76,8 +72,6 @@ def scan_code():
             'status': 500,
             'message': '분석 엔진 실행 중 오류 발생.',
             'result':{
-                'file_id': None,
-                'uploaded_files': None
                 }
         }), 500
 

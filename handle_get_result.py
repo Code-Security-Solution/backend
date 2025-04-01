@@ -11,16 +11,35 @@ def get_scan_result(file_id):
     
     record = get_scan_result_by_id(file_id)
     if not record:
-        return jsonify({'error': '해당 file_id에 대한 결과가 없습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '해당 file_id에 대한 결과가 없습니다.',
+            'result':{
+                }
+        }), 404
     
     translated_result_file = record['translated_result_file']
 
     if not os.path.exists(translated_result_file):
-        return jsonify({'error': '분석 결과 파일이 존재하지 않습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '분석 결과 파일이 존재하지 않습니다.',
+            'result':{
+                }
+        }), 404
     
     try:
         with open(translated_result_file, 'r', encoding='utf-8-sig') as f:
             scan_results = json.load(f)
-        return jsonify({'scan_results': scan_results})
+        return jsonify({
+            'status': 200,
+            'message': 'success',
+            'result': scan_results
+        }), 200
     except Exception as e:
-        return jsonify({'error': '파일 읽기 실패', 'details': str(e)}), 500
+        return jsonify({
+            'status': 500,
+            'message': '파일 읽기 실패 :' + str(e),
+            'result':{
+                }
+        }), 500

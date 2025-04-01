@@ -27,18 +27,33 @@ def get_summary_report(file_id):
     # MongoDB에서 데이터 조회
     db_data = get_analysis_report(file_id)
     if not db_data:
-        return jsonify({"error": "Report not found"}), 404
+        return jsonify({
+            'status': 404,
+            'message': 'Report not found',
+            'result':{
+                }
+        }), 404
 
     json_file_path = db_data.get("translated_result_file")  # MongoDB에서 경로 가져오기
     if not os.path.exists(json_file_path):
-        return jsonify({"error": "JSON file not found"}), 404
+        return jsonify({
+            'status': 404,
+            'message': 'JSON file not found',
+            'result':{
+                }
+        }), 404
 
     # JSON 파일 로드
     try:
         with open(json_file_path, "r", encoding="utf-8-sig") as file:  # utf-8-sig 사용
             json_data = json.load(file)
     except json.JSONDecodeError as e:
-        return jsonify({"error": f"JSON Decode Error: {str(e)}"}), 500
+        return jsonify({
+            'status': 500,
+            'message': f"JSON Decode Error: {str(e)}",
+            'result':{
+                }
+        }), 500
 
     # 전체 취약점 개수 계산
     results = json_data.get("results", [])
@@ -77,4 +92,8 @@ def get_summary_report(file_id):
         "vulnerabilities": vulnerabilities
     }
 
-    return jsonify(summary_report), 200
+    return jsonify({
+            'status': 200,
+            'message': 'success',
+            'result':summary_report
+        }), 200

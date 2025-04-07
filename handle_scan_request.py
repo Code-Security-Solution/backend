@@ -4,6 +4,7 @@ import uuid
 import subprocess
 from flask import request, jsonify
 from database import insert_scan_record
+from handle_auth import token_required
 
 # 설정 파일 로드
 with open('config.json', 'rt', encoding='utf-8') as file:
@@ -17,7 +18,8 @@ RESULT_DIR = 'results'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULT_DIR, exist_ok=True)
 
-def scan_code():
+@token_required
+def scan_code(current_user):
     """
     POST 요청: 파일을 받아 분석을 수행하고 결과 파일을 생성
     /scan
@@ -29,9 +31,9 @@ def scan_code():
             'result':{
                 }
         }), 400
-    
+
     files = request.files.getlist('source_code')  # 여러 개의 파일 받기
-    
+
     if not files or all(f.filename == '' for f in files):
         return jsonify({
             'status': 400,
@@ -39,7 +41,10 @@ def scan_code():
             'result':{
                 }
         }), 400
-    
+
+    # 로그인 사용자의 이메일 사용
+    user_email = current_user['email']
+
     # 고유 폴더 생성 (각 요청마다 별도 폴더)
     file_id = str(uuid.uuid4())
     upload_folder = os.path.join(UPLOAD_DIR, file_id)
@@ -76,8 +81,7 @@ def scan_code():
         }), 500
 
     # DB에 정보 저장
-    insert_scan_record(file_id, file_paths, result_file, translated_result_file)
-
+    insert_scan_record(user_email, file_id, file_paths, result_file, translated_result_file)
 
     # # 생성된 폴더 삭제하려면 추가
     # import shutil

@@ -1,40 +1,27 @@
-from flask import Flask, jsonify, request
-from pymongo import MongoClient
+from flask import jsonify
 import os
 import json
+from handle_auth import token_required
+from database import get_file_by_id
 
 with open('config.json', 'rt', encoding='utf-8') as file:
     config = json.load(file)
 
-MONGO_URI = config.get('MONGO_URI')
-DB_NAME = config.get('DB_NAME')
-COLLECTION_NAME = "scan_results"
-
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
-collection = db[COLLECTION_NAME]
-
-def get_analysis_report(file_id):
-    """MongoDB에서 분석 보고서 데이터 가져오기"""
-    report = collection.find_one({"file_id": file_id})  # 필드명이 맞는지 확인
-    # print("DB Query Result:", report)  # 디버깅용
-    return report
-
-
-def get_summary_report(file_id):
+@token_required
+def get_summary_report(current_user, file_id):
     """취약점 분석 보고서를 요약하여 반환하는 엔드포인트"""
-    
-    # MongoDB에서 데이터 조회
-    db_data = get_analysis_report(file_id)
+
+    # 데이터베이스에서 파일 정보 조회 (이메일로 소유권 확인)
+    db_data = get_file_by_id(file_id, current_user['email'])
     if not db_data:
         return jsonify({
             'status': 404,
-            'message': 'Report not found',
+            'message': 'Report not found or access denied',
             'result':{
                 }
         }), 404
 
-    json_file_path = db_data.get("translated_result_file")  # MongoDB에서 경로 가져오기
+    json_file_path = db_data.get("translated_result_file")
     if not os.path.exists(json_file_path):
         return jsonify({
             'status': 404,
@@ -45,7 +32,7 @@ def get_summary_report(file_id):
 
     # JSON 파일 로드
     try:
-        with open(json_file_path, "r", encoding="utf-8-sig") as file:  # utf-8-sig 사용
+        with open(json_file_path, "r", encoding="utf-8-sig") as file:
             json_data = json.load(file)
     except json.JSONDecodeError as e:
         return jsonify({
@@ -84,8 +71,8 @@ def get_summary_report(file_id):
 
     # 최종 응답 JSON
     summary_report = {
-        "user_id": None,  # 비회원이므로 null
-        "analyzed_at": db_data.get("created_at"),  # MongoDB에서 가져온 분석 날짜/시간
+        "user_id": current_user['email'],  # 현재 사용자의 이메일 사용
+        "analyzed_at": db_data.get("created_at"),
         "scannedFiles": scanned_files,
         "totalVulnerabilities": total_vulnerabilities,
         "severitySummary": severity_summary,

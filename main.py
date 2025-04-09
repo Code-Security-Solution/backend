@@ -9,7 +9,7 @@ from handle_scan_request import scan_code
 from handle_get_result import get_scan_result
 from handle_get_summary import get_summary_report
 from handle_auth import token_required, register_user_handler, login_handler
-from handle_files import download_source_handler, download_result_handler, download_translated_result_handler, download_all_sources_handler, my_files_handler
+from handle_files import download_source_handler, download_result_handler, download_translated_result_handler, download_all_sources_handler, my_files_handler, get_user_info
 from database import register_user, get_user_by_email, get_user_files, get_file_by_id, json_serialize
 import json
 from bson import ObjectId
@@ -38,6 +38,7 @@ app.add_url_rule('/summary-report/<file_id>', view_func=get_summary_report, meth
 # 인증 관련 라우팅
 app.add_url_rule('/register', view_func=register_user_handler, methods=['POST'])
 app.add_url_rule('/login', view_func=login_handler, methods=['POST'])
+app.add_url_rule('/user/me', view_func=get_user_info, methods=['GET'])
 
 # 파일 관리 관련 라우팅
 app.add_url_rule('/my-files', view_func=my_files_handler, methods=['GET'])

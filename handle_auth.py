@@ -29,6 +29,24 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+@token_required
+def get_user_info(current_user):
+    """
+    GET 요청: 로그인한 사용자 정보를 반환합니다.
+    /user/me
+    """
+    # ObjectId는 JSON 직렬화가 불가능하므로 변환
+    user_info = {
+        'email': current_user.get('email'),
+        'username': current_user.get('username')
+    }
+
+    return jsonify({
+        'status': 200,
+        'message': '사용자 정보 조회 성공',
+        'result': user_info
+    }), 200
+
 def register_user_handler():
     data = request.json
     email = data.get("email")

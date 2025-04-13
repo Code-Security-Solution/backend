@@ -1,61 +1,130 @@
-# backend
+# Backend
 
 ## 구조
 
     /backend
-    │── main.py                  # Flask 앱 실행 및 엔드포인트 등록
-    │── handle_scan_request.py   # /scan 요청 처리
-    │── handle_get_result.py     # /scan-result 요청 처리
-    │── database.py              # DB 연결
-    │── config.json              # 설정 파일, config.template.json을 변경
+    │── main.py                    # Flask 앱 실행 및 엔드포인트 등록
+    │── handle_auth.py             # 인증 관련 요청 처리 (/register, /login, /user/me)
+    │── handle_scan_request.py     # /scan 요청 처리
+    │── handle_get_result.py       # /scan-result 요청 처리
+    │── handle_get_summary.py      # /summary-report 요청 처리
+    │── handle_files.py            # 파일 다운로드 및 목록 조회 요청 처리 # 추가 구현 사항
+    │── database.py                # MongoDB DB 연결 및 데이터 처리
+    │── config.template.json                # 설정 파일
+    │── .gitignore                 # Git 제외 파일 목록
+    │── README.md                  # 이 문서
 
-    아래는 자동 생성됨.
-    │── uploads/                 # 업로드된 소스 코드 파일 저장
-    │── results/                 # 분석 결과 파일 저장
+    아래는 자동 생성됨:
+    │── uploads/                   # 업로드된 소스 코드 파일 저장
+    │── results/                   # 분석 결과 파일 저장
+    │── __pycache__/               # Python 캐시 파일
 
+## API 엔드포인트
 
-## 진행 상황
-    
-    서버 실행 후
-    curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c"
-    위와 같이 요청시 취약점 분석 후 json파일로 저장함.
-    uploads 폴더에 피분석 소스코드 파일 저장됨.
-    분석 결과는 results 폴더에 저장됨.
+### 인증 API
+- `POST /register` - 사용자 회원가입
+- `POST /login` - 사용자 로그인 (토큰 발급)
+- `GET /user/me` - 현재 로그인한 사용자 정보 조회
 
-    curl -X GET http://127.0.0.1:5000/scan-result/<file_id>
-    위와 같이 요청시 <file_id>_translated.json 파일을 가져옴.
+# 추가 구현 사항
+### 파일 관리 API
+- `GET /my-files` - 사용자의 파일 목록 조회
+- `GET /download-source/<file_id>` - 원본 소스 파일 단일 다운로드
+- `GET /download-all-sources/<file_id>` - 모든 원본 소스 파일 다운로드 (ZIP)
+- `GET /download-result/<file_id>` - 분석 결과 파일 다운로드
+- `GET /download-translated-result/<file_id>` - 번역된 분석 결과 파일 다운로드
 
-    curl -X GET http://127.0.0.1:5000/summary-report/<file_id>
-    위와 같이 요청시 <file_id>_translated.json 을 가공하여 요약 레포트를 가져옴
-    
+### 분석 API
+- `POST /scan` - 소스 코드 분석 요청
+- `GET /scan-result/<file_id>` - 특정 파일의 분석 결과 조회
+- `GET /summary-report/<file_id>` - 특정 파일의 분석 요약 보고서 조회
+
+## 인증 시스템
+
+모든 API는 (회원가입, 로그인 제외) 토큰 기반 인증이 필요합니다.
+로그인 시 발급받은 토큰을 HTTP 헤더 `x-access-token`에 포함시켜야 합니다.
 
 ## 실행 방법
-    docker 실행, MongoDB 실행
-    
-    git clone https://github.com/Code-Security-Solution/backend.git
-    
-    config.template.json파일에서 CLI_EXECUTABLE 에 Code_Nova_Guardian.exe 의 경로를 입력해야함.
-    그리고 config.json 으로 이름 변경해야함.
-    [ex) "CLI_EXECUTABLE" : "C:\\cng\\Code_Nova_Guardian.exe"]
 
-    cd backend
-    
-    python -m venv venv
-    .\venv\Scripts\activate     # 가상 환경 생성
+1. 사전 준비
+   - MongoDB 실행
+   - Code_Nova_Guardian 설치
 
-    pip install flask           # flask 설치
+2. 설정
+   ```
+   git clone https://github.com/Code-Security-Solution/backend.git
+   cd backend
+   ```
 
-    python main.py
+   - `config.template.json` 파일 설정값 변경:
+     - `CLI_EXECUTABLE`: Code_Nova_Guardian.exe의 경로 설정
+     - `SECRET_KEY`: 임의의 비밀 키 설정 (JWT 토큰 생성용)
 
+3. 가상 환경 설정 및 의존성 설치
+   ```
+   python -m venv venv
+   .\venv\Scripts\activate     # Windows
+   # source venv/bin/activate  # Linux/Mac
 
-    서버 실행 후 아래와 같이 요청
-    curl -X POST http://127.0.0.1:5000/scan \
-    -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c"
-        # ㄴ 하나의 소스코드를 요청할 때
-    
-    curl -X POST http://127.0.0.1:5000/scan \
-    -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Buffer Overflow\example1.c" \
-    -F "source_code=@C:\cng\Vulnerable-Code-Snippets\Code Execution\Discourse_SNS_webhook_RCE.rb"
-        # ㄴ 둘 이상의 소스코드를 요청할 때
+   pip install flask pymongo pyjwt werkzeug
+   ```
 
-    curl -X GET http://127.0.0.1:5000/scan-result/<file_id>
+4. 서버 실행
+   ```
+   python main.py
+   ```
+
+## API 사용 예시
+
+### 회원가입
+```
+curl -X POST http://127.0.0.1:5000/register -H "Content-Type: application/json" -d "{\"email\":\"user@example.com\",\"password\":\"password123\"}"
+```
+
+### 로그인
+```
+curl -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d "{\"email\":\"user@example.com\",\"password\":\"password123\"}"
+```
+
+### 사용자 정보 조회
+```
+curl -X GET http://127.0.0.1:5000/user/me -H "x-access-token: YOUR_TOKEN"
+```
+
+### 코드 분석 요청
+```
+# 단일 파일 분석
+curl -X POST http://127.0.0.1:5000/scan -H "x-access-token: YOUR_TOKEN" -F "source_code=@C:\path\to\example1.c"
+
+# 다중 파일 분석
+curl -X POST http://127.0.0.1:5000/scan -H "x-access-token: YOUR_TOKEN" -F "source_code=@C:\path\to\example1.c" -F "source_code=@C:\path\to\example2.c"
+```
+
+### 분석 결과 조회
+```
+curl -X GET http://127.0.0.1:5000/scan-result/FILE_ID -H "x-access-token: YOUR_TOKEN"
+```
+
+### 분석 요약 보고서 조회
+```
+curl -X GET http://127.0.0.1:5000/summary-report/FILE_ID -H "x-access-token: YOUR_TOKEN"
+```
+
+### 파일 다운로드
+```
+curl -X GET http://127.0.0.1:5000/download-result/FILE_ID -H "x-access-token: YOUR_TOKEN" -o result.json
+```
+
+### 사용자 파일 목록 조회
+```
+curl -X GET http://127.0.0.1:5000/my-files -H "x-access-token: YOUR_TOKEN"
+```
+
+## 상태 코드
+
+- **200**: 성공
+- **201**: 리소스 생성 성공 (회원가입 등)
+- **400**: 잘못된 요청
+- **401**: 인증 실패
+- **404**: 리소스 없음
+- **500**: 서버 오류

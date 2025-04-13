@@ -55,7 +55,7 @@
 
 로그인 시 발급받은 토큰을 HTTP 헤더 `x-access-token`에 포함시키면 파일과 사용자를 연결하여 관리할 수 있습니다.
 
-로그인 없이 분석을 요청하면 익명 사용자("anonymous")로 처리됩니다.
+**중요**: 로그인하지 않고 분석을 요청하면 분석은 수행되지만, 결과는 데이터베이스에 저장되지 않습니다. 따라서 로그인한 상태에서 분석을 수행하는 것이 권장됩니다.
 
 ## 실행 방법
 
@@ -107,10 +107,10 @@ curl -X GET http://127.0.0.1:5000/user/me -H "x-access-token: YOUR_TOKEN"
 
 ### 코드 분석 요청 (토큰 선택 사항)
 ```
-# 토큰 있음 (로그인 사용자로 분석)
+# 토큰 있음 (로그인 사용자로 분석, 데이터베이스에 저장됨)
 curl -X POST http://127.0.0.1:5000/scan -H "x-access-token: YOUR_TOKEN" -F "source_code=@C:\path\to\example1.c"
 
-# 토큰 없음 (익명 사용자로 분석)
+# 토큰 없음 (익명 사용자로 분석, 데이터베이스에 저장되지 않음)
 curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\path\to\example1.c"
 
 # 다중 파일 분석

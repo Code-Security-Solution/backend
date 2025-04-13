@@ -45,9 +45,10 @@ def scan_code():
 
     # 로그인 여부 확인
     token = request.headers.get('x-access-token')
-    user_email = "anonymous"  # 기본값: 익명 사용자
+    user_email = None  # 기본값: None (로그인하지 않은 사용자)
+    is_authenticated = False  # 인증 상태 추적
 
-    # 토큰이 있는 경우 사용자 정보 가져오기 (선택적)
+    # 토큰이 있는 경우 사용자 정보 가져오기
     if token:
         try:
             from handle_auth import SECRET_KEY
@@ -57,6 +58,7 @@ def scan_code():
             current_user = get_user_by_email(data['email'])
             if current_user:
                 user_email = current_user['email']
+                is_authenticated = True  # 인증 성공
         except Exception as e:
             print(f"토큰 검증 실패 (무시하고 진행): {str(e)}")
             # 토큰이 유효하지 않아도 계속 진행
@@ -96,8 +98,12 @@ def scan_code():
                 }
         }), 500
 
-    # DB에 정보 저장
-    insert_scan_record(user_email, file_id, file_paths, result_file, translated_result_file)
+    # DB에 정보 저장 (인증된 사용자만)
+    if is_authenticated and user_email:
+        insert_scan_record(user_email, file_id, file_paths, result_file, translated_result_file)
+        db_message = "파일이 DB에 저장되었습니다."
+    else:
+        db_message = "익명 사용자의 분석 결과는 DB에 저장되지 않습니다."
 
     # # 생성된 폴더 삭제하려면 추가
     # import shutil
@@ -105,9 +111,10 @@ def scan_code():
 
     return jsonify({
             'status': 200,
-            'message': '파일이 성공적으로 분석되었습니다.',
+            'message': f'파일이 성공적으로 분석되었습니다. {db_message}',
             'result':{
                 'file_id': file_id,
-                'uploaded_files': file_paths
+                'uploaded_files': file_paths,
+                'is_saved_to_db': is_authenticated
                 }
         })

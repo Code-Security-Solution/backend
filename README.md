@@ -8,9 +8,9 @@
     │── handle_scan_request.py     # /scan 요청 처리
     │── handle_get_result.py       # /scan-result 요청 처리
     │── handle_get_summary.py      # /summary-report 요청 처리
-    │── handle_files.py            # 파일 다운로드 및 목록 조회 요청 처리 # 추가 구현 사항
+    │── handle_files.py            # 파일 다운로드 및 목록 조회 요청 처리 (추가 구현 사항)
     │── database.py                # MongoDB DB 연결 및 데이터 처리
-    │── config.template.json                # 설정 파일
+    │── config.template.json       # 설정 파일
     │── .gitignore                 # Git 제외 파일 목록
     │── README.md                  # 이 문서
 
@@ -110,9 +110,19 @@ curl -X GET http://127.0.0.1:5000/scan-result/FILE_ID -H "x-access-token: YOUR_T
 curl -X GET http://127.0.0.1:5000/summary-report/FILE_ID -H "x-access-token: YOUR_TOKEN"
 ```
 
-### 파일 다운로드
+### 파일 다운로드 (추가 구현 사항)
 ```
+# 분석 결과 파일 다운로드
 curl -X GET http://127.0.0.1:5000/download-result/FILE_ID -H "x-access-token: YOUR_TOKEN" -o result.json
+
+# 원본 소스 파일 다운로드
+curl -X GET http://127.0.0.1:5000/download-source/FILE_ID -H "x-access-token: YOUR_TOKEN" -o source.c
+
+# 번역된 분석 결과 파일 다운로드
+curl -X GET http://127.0.0.1:5000/download-translated-result/FILE_ID -H "x-access-token: YOUR_TOKEN" -o translated_result.json
+
+# 모든 원본 소스 파일 다운로드 (ZIP)
+curl -X GET http://127.0.0.1:5000/download-all-sources/FILE_ID -H "x-access-token: YOUR_TOKEN" -o all_sources.zip
 ```
 
 ### 사용자 파일 목록 조회

@@ -9,6 +9,7 @@ import json
 
 @token_required
 def my_files_handler(current_user):
+    # 이 함수는 사용자별 파일 목록이므로 인증 유지
     user_email = current_user['email']
     files = get_user_files(user_email)
 
@@ -52,12 +53,20 @@ def download_source_handler(current_user, file_id):
     file_info = get_file_by_id(file_id, user_email)
 
     if not file_info:
-        return jsonify({'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.',
+            'result': {}
+        }), 404
 
     # 파일 경로 리스트에서 첫 번째 파일만 다운로드 (여러 파일인 경우 수정 필요)
     file_path = file_info.get('file_paths', [])[0]
     if not os.path.exists(file_path):
-        return jsonify({'message': '파일이 서버에 존재하지 않습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '파일이 서버에 존재하지 않습니다.',
+            'result': {}
+        }), 404
 
     # 파일 이름 추출
     file_name = os.path.basename(file_path)
@@ -73,12 +82,20 @@ def download_result_handler(current_user, file_id):
     file_info = get_file_by_id(file_id, user_email)
 
     if not file_info:
-        return jsonify({'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.',
+            'result': {}
+        }), 404
 
     # 분석 결과 파일 경로
     result_file = file_info.get('result_file')
     if not os.path.exists(result_file):
-        return jsonify({'message': '분석 결과 파일이 서버에 존재하지 않습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '분석 결과 파일이 서버에 존재하지 않습니다.',
+            'result': {}
+        }), 404
 
     # 파일 이름 추출
     file_name = os.path.basename(result_file)
@@ -94,12 +111,20 @@ def download_translated_result_handler(current_user, file_id):
     file_info = get_file_by_id(file_id, user_email)
 
     if not file_info:
-        return jsonify({'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.',
+            'result': {}
+        }), 404
 
     # 번역된 분석 결과 파일 경로
     translated_result_file = file_info.get('translated_result_file')
     if not os.path.exists(translated_result_file):
-        return jsonify({'message': '번역된 분석 결과 파일이 서버에 존재하지 않습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '번역된 분석 결과 파일이 서버에 존재하지 않습니다.',
+            'result': {}
+        }), 404
 
     # 파일 이름 추출
     file_name = os.path.basename(translated_result_file)
@@ -115,12 +140,20 @@ def download_all_sources_handler(current_user, file_id):
     file_info = get_file_by_id(file_id, user_email)
 
     if not file_info:
-        return jsonify({'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '파일을 찾을 수 없거나 접근 권한이 없습니다.',
+            'result': {}
+        }), 404
 
     # 모든 파일 경로 가져오기
     file_paths = file_info.get('file_paths', [])
     if not file_paths:
-        return jsonify({'message': '다운로드할 소스 파일이, 없습니다.'}), 404
+        return jsonify({
+            'status': 404,
+            'message': '다운로드할 소스 파일이, 없습니다.',
+            'result': {}
+        }), 404
 
     # 임시 zip 파일 생성
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
@@ -140,7 +173,11 @@ def download_all_sources_handler(current_user, file_id):
                        download_name=f'source_files_{file_id}.zip',
                        mimetype='application/zip')
     except Exception as e:
-        return jsonify({'message': f'파일 압축 중 오류가 발생했습니다: {str(e)}'}), 500
+        return jsonify({
+            'status': 500,
+            'message': f'파일 압축 중 오류가 발생했습니다: {str(e)}',
+            'result': {}
+        }), 500
     finally:
         # 사용 후 임시 파일 삭제 예약
         os.unlink(temp_file.name)

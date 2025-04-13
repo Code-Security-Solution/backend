@@ -1,22 +1,23 @@
 from flask import jsonify
 import os
 import json
-from handle_auth import token_required
+# token_required 주석 처리
+# from handle_auth import token_required
 from database import get_file_by_id
 
 with open('config.json', 'rt', encoding='utf-8') as file:
     config = json.load(file)
 
-@token_required
-def get_summary_report(current_user, file_id):
+# token_required 데코레이터 제거
+def get_summary_report(file_id):
     """취약점 분석 보고서를 요약하여 반환하는 엔드포인트"""
 
-    # 데이터베이스에서 파일 정보 조회 (이메일로 소유권 확인)
-    db_data = get_file_by_id(file_id, current_user['email'])
+    # 사용자 인증 없이 file_id로만 파일 정보 조회
+    db_data = get_file_by_id(file_id)
     if not db_data:
         return jsonify({
             'status': 404,
-            'message': 'Report not found or access denied',
+            'message': 'Report not found',
             'result':{
                 }
         }), 404
@@ -71,7 +72,7 @@ def get_summary_report(current_user, file_id):
 
     # 최종 응답 JSON
     summary_report = {
-        "user_id": current_user['email'],  # 현재 사용자의 이메일 사용
+        "user_id": db_data.get("user_email", "anonymous"),  # 사용자 이메일 또는 익명
         "analyzed_at": db_data.get("created_at"),
         "scannedFiles": scanned_files,
         "totalVulnerabilities": total_vulnerabilities,

@@ -1,21 +1,22 @@
 import os
 import json
-from flask import jsonify
+from flask import jsonify, request
 from database import get_scan_result_by_id
-from handle_auth import token_required
+# token_required 주석 처리
+# from handle_auth import token_required
 
-@token_required
-def get_scan_result(current_user, file_id):
+# token_required 데코레이터 제거
+def get_scan_result(file_id):
     """
     GET 요청: 특정 file_id의 번역된 분석 결과 JSON 반환
     /scan-result/<file_id>
     """
-    # 현재 사용자의 이메일로 파일 소유권 확인
-    record = get_scan_result_by_id(file_id, current_user['email'])
+    # 사용자 인증 없이 file_id로만 결과 조회
+    record = get_scan_result_by_id(file_id)
     if not record:
         return jsonify({
             'status': 404,
-            'message': '해당 file_id에 대한 결과가 없거나 접근 권한이 없습니다.',
+            'message': '해당 file_id에 대한 결과가 없습니다.',
             'result':{
                 }
         }), 404

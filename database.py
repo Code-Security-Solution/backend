@@ -60,13 +60,18 @@ def get_user_by_email(email):
 def get_user_files(email):
     return list(files_collection.find({"email": email}))
 
-# 특정 파일 ID와 이메일로 파일 조회 (파일 소유권 확인)
-def get_file_by_id(file_id, email):
-    return files_collection.find_one({"file_id": file_id, "email": email})
+# 특정 파일 ID로 파일 조회 (이메일 매개변수 선택 사항)
+def get_file_by_id(file_id, email=None):
+    if email:
+        # 이메일이 제공된 경우 소유권 확인
+        return files_collection.find_one({"file_id": file_id, "email": email})
+    else:
+        # 이메일이 제공되지 않은 경우 file_id로만 조회
+        return files_collection.find_one({"file_id": file_id})
 
-def get_scan_result_by_id(file_id, email):
-    """특정 file_id와 이메일로 스캔 결과 조회 (파일 소유권 확인)"""
-    # 사용자의 파일 소유권 확인
+def get_scan_result_by_id(file_id, email=None):
+    """특정 file_id로 스캔 결과 조회 (이메일 매개변수 선택 사항)"""
+    # 파일 정보 조회
     file_info = get_file_by_id(file_id, email)
     if not file_info:
         return None
@@ -74,7 +79,7 @@ def get_scan_result_by_id(file_id, email):
     # 변환된 결과 파일 정보 반환
     return {
         "file_id": file_id,
-        "email": email,
+        "user_email": file_info.get("email", "anonymous"),
         "result_file": file_info.get("result_file"),
         "translated_result_file": file_info.get("translated_result_file")
     }

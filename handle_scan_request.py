@@ -4,7 +4,8 @@ import uuid
 import subprocess
 from flask import request, jsonify
 from database import insert_scan_record
-from handle_auth import token_required
+# token_required 주석 처리
+# from handle_auth import token_required
 
 # 설정 파일 로드
 with open('config.json', 'rt', encoding='utf-8') as file:
@@ -18,8 +19,8 @@ RESULT_DIR = 'results'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULT_DIR, exist_ok=True)
 
-@token_required
-def scan_code(current_user):
+# token_required 데코레이터 제거
+def scan_code():
     """
     POST 요청: 파일을 받아 분석을 수행하고 결과 파일을 생성
     /scan
@@ -42,8 +43,23 @@ def scan_code(current_user):
                 }
         }), 400
 
-    # 로그인 사용자의 이메일 사용
-    user_email = current_user['email']
+    # 로그인 여부 확인
+    token = request.headers.get('x-access-token')
+    user_email = "anonymous"  # 기본값: 익명 사용자
+
+    # 토큰이 있는 경우 사용자 정보 가져오기 (선택적)
+    if token:
+        try:
+            from handle_auth import SECRET_KEY
+            import jwt
+            from database import get_user_by_email
+            data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            current_user = get_user_by_email(data['email'])
+            if current_user:
+                user_email = current_user['email']
+        except Exception as e:
+            print(f"토큰 검증 실패 (무시하고 진행): {str(e)}")
+            # 토큰이 유효하지 않아도 계속 진행
 
     # 고유 폴더 생성 (각 요청마다 별도 폴더)
     file_id = str(uuid.uuid4())

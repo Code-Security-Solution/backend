@@ -10,9 +10,9 @@
     │── handle_get_summary.py      # /summary-report 요청 처리
     │── handle_files.py            # 파일 다운로드 및 목록 조회 요청 처리 # 추가 구현 사항
     │── database.py                # MongoDB DB 연결 및 데이터 처리
-    │── config.template.json                # 설정 파일
+    │── config.template.json       # 설정 파일
     │── .gitignore                 # Git 제외 파일 목록
-    │── README.md                  # 이 문서
+    │── README.md                  # README 파일
 
     아래는 자동 생성됨:
     │── uploads/                   # 업로드된 소스 코드 파일 저장

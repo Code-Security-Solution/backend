@@ -26,7 +26,7 @@
 - `POST /login` - 사용자 로그인 (토큰 발급)
 - `GET /user/me` - 현재 로그인한 사용자 정보 조회
 
-# 추가 구현 사항
+### 추가 구현 사항
 ### 파일 관리 API
 - `GET /my-files` - 사용자의 파일 목록 조회
 - `GET /download-source/<file_id>` - 원본 소스 파일 단일 다운로드

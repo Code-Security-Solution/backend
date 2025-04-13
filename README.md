@@ -8,11 +8,11 @@
     │── handle_scan_request.py     # /scan 요청 처리
     │── handle_get_result.py       # /scan-result 요청 처리
     │── handle_get_summary.py      # /summary-report 요청 처리
-    │── handle_files.py            # 파일 다운로드 및 목록 조회 요청 처리 (추가 구현 사항)
+    │── handle_files.py            # 파일 다운로드 및 목록 조회 요청 처리
     │── database.py                # MongoDB DB 연결 및 데이터 처리
     │── config.template.json       # 설정 파일
     │── .gitignore                 # Git 제외 파일 목록
-    │── README.md                  # README 파일
+    │── README.md                  # README 파일일
 
     아래는 자동 생성됨:
     │── uploads/                   # 업로드된 소스 코드 파일 저장
@@ -22,17 +22,16 @@
 ## API 엔드포인트
 
 ### 인증 API
-- `POST /register` - 사용자 회원가입
+- `POST /register` - 사용자 회원가입 (email, password, username 필수)
 - `POST /login` - 사용자 로그인 (토큰 발급)
-- `GET /user/me` - 현재 로그인한 사용자 정보 조회
+- `GET /user/me` - 현재 로그인한 사용자 정보 조회 (인증 필요)
 
-### 추가 구현 사항
-### 파일 관리 API
-- `GET /my-files` - 사용자의 파일 목록 조회
-- `GET /download-source/<file_id>` - 원본 소스 파일 단일 다운로드
-- `GET /download-all-sources/<file_id>` - 모든 원본 소스 파일 다운로드 (ZIP)
-- `GET /download-result/<file_id>` - 분석 결과 파일 다운로드
-- `GET /download-translated-result/<file_id>` - 번역된 분석 결과 파일 다운로드
+### 파일 관리 API (추가 구현 사항)
+- `GET /my-files` - 사용자의 파일 목록 조회 (인증 필요)
+- `GET /download-source/<file_id>` - 원본 소스 파일 단일 다운로드 (인증 필요)
+- `GET /download-all-sources/<file_id>` - 모든 원본 소스 파일 다운로드 (ZIP) (인증 필요)
+- `GET /download-result/<file_id>` - 분석 결과 파일 다운로드 (인증 필요)
+- `GET /download-translated-result/<file_id>` - 번역된 분석 결과 파일 다운로드 (인증 필요)
 
 ### 분석 API
 - `POST /scan` - 소스 코드 분석 요청
@@ -41,8 +40,22 @@
 
 ## 인증 시스템
 
-모든 API는 (회원가입, 로그인 제외) 토큰 기반 인증이 필요합니다.
-로그인 시 발급받은 토큰을 HTTP 헤더 `x-access-token`에 포함시켜야 합니다.
+인증은 일부 API에서 선택 사항이며, 다음 API는 토큰이 필요합니다:
+- `/user/me` (사용자 정보 조회)
+- `/my-files` (사용자 파일 목록 조회)
+- `/download-source/<file_id>` (파일 다운로드)
+- `/download-result/<file_id>` (결과 다운로드)
+- `/download-translated-result/<file_id>` (번역된 결과 다운로드)
+- `/download-all-sources/<file_id>` (모든 소스 다운로드)
+
+다음 API는 토큰 없이 사용할 수 있습니다:
+- `/scan` (소스 코드 분석 요청)
+- `/scan-result/<file_id>` (분석 결과 조회)
+- `/summary-report/<file_id>` (요약 보고서 조회)
+
+로그인 시 발급받은 토큰을 HTTP 헤더 `x-access-token`에 포함시키면 파일과 사용자를 연결하여 관리할 수 있습니다.
+
+로그인 없이 분석을 요청하면 익명 사용자("anonymous")로 처리됩니다.
 
 ## 실행 방법
 
@@ -78,7 +91,8 @@
 
 ### 회원가입
 ```
-curl -X POST http://127.0.0.1:5000/register -H "Content-Type: application/json" -d "{\"email\":\"user@example.com\",\"password\":\"password123\"}"
+# 모든 필수 항목 포함 회원가입
+curl -X POST http://127.0.0.1:5000/register -H "Content-Type: application/json" -d "{\"email\":\"user@example.com\",\"password\":\"password123\",\"username\":\"홍길동\"}"
 ```
 
 ### 로그인
@@ -86,31 +100,34 @@ curl -X POST http://127.0.0.1:5000/register -H "Content-Type: application/json" 
 curl -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d "{\"email\":\"user@example.com\",\"password\":\"password123\"}"
 ```
 
-### 사용자 정보 조회
+### 사용자 정보 조회 (토큰 필요)
 ```
 curl -X GET http://127.0.0.1:5000/user/me -H "x-access-token: YOUR_TOKEN"
 ```
 
-### 코드 분석 요청
+### 코드 분석 요청 (토큰 선택 사항)
 ```
-# 단일 파일 분석
+# 토큰 있음 (로그인 사용자로 분석)
 curl -X POST http://127.0.0.1:5000/scan -H "x-access-token: YOUR_TOKEN" -F "source_code=@C:\path\to\example1.c"
 
+# 토큰 없음 (익명 사용자로 분석)
+curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\path\to\example1.c"
+
 # 다중 파일 분석
-curl -X POST http://127.0.0.1:5000/scan -H "x-access-token: YOUR_TOKEN" -F "source_code=@C:\path\to\example1.c" -F "source_code=@C:\path\to\example2.c"
+curl -X POST http://127.0.0.1:5000/scan -F "source_code=@C:\path\to\example1.c" -F "source_code=@C:\path\to\example2.c"
 ```
 
-### 분석 결과 조회
+### 분석 결과 조회 (토큰 불필요)
 ```
-curl -X GET http://127.0.0.1:5000/scan-result/FILE_ID -H "x-access-token: YOUR_TOKEN"
-```
-
-### 분석 요약 보고서 조회
-```
-curl -X GET http://127.0.0.1:5000/summary-report/FILE_ID -H "x-access-token: YOUR_TOKEN"
+curl -X GET http://127.0.0.1:5000/scan-result/FILE_ID
 ```
 
-### 파일 다운로드 (추가 구현 사항)
+### 분석 요약 보고서 조회 (토큰 불필요)
+```
+curl -X GET http://127.0.0.1:5000/summary-report/FILE_ID
+```
+
+### 파일 다운로드 (추가 구현 사항/토큰 필요)
 ```
 # 분석 결과 파일 다운로드
 curl -X GET http://127.0.0.1:5000/download-result/FILE_ID -H "x-access-token: YOUR_TOKEN" -o result.json
@@ -125,7 +142,7 @@ curl -X GET http://127.0.0.1:5000/download-translated-result/FILE_ID -H "x-acces
 curl -X GET http://127.0.0.1:5000/download-all-sources/FILE_ID -H "x-access-token: YOUR_TOKEN" -o all_sources.zip
 ```
 
-### 사용자 파일 목록 조회
+### 사용자 파일 목록 조회 (토큰 필요)
 ```
 curl -X GET http://127.0.0.1:5000/my-files -H "x-access-token: YOUR_TOKEN"
 ```

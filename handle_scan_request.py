@@ -26,8 +26,7 @@ def scan_code():
         return jsonify({
             'status': 400,
             'message': '소스코드 파일이 업로드되지 않았습니다.',
-            'result':{
-                }
+            'result': None
         }), 400
     
     files = request.files.getlist('source_code')  # 여러 개의 파일 받기
@@ -36,8 +35,7 @@ def scan_code():
         return jsonify({
             'status': 400,
             'message': '유효한 소스코드 파일이 없습니다.',
-            'result':{
-                }
+            'result': None
         }), 400
     
     # 고유 폴더 생성 (각 요청마다 별도 폴더)
@@ -71,8 +69,7 @@ def scan_code():
         return jsonify({
             'status': 500,
             'message': '분석 엔진 실행 중 오류 발생.',
-            'result':{
-                }
+            'result': None
         }), 500
 
     # DB에 정보 저장

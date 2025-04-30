@@ -30,8 +30,7 @@ def get_summary_report(file_id):
         return jsonify({
             'status': 404,
             'message': 'Report not found',
-            'result':{
-                }
+            'result': None
         }), 404
 
     json_file_path = db_data.get("translated_result_file")  # MongoDB에서 경로 가져오기
@@ -39,8 +38,7 @@ def get_summary_report(file_id):
         return jsonify({
             'status': 404,
             'message': 'JSON file not found',
-            'result':{
-                }
+            'result': None
         }), 404
 
     # JSON 파일 로드
@@ -51,8 +49,7 @@ def get_summary_report(file_id):
         return jsonify({
             'status': 500,
             'message': f"JSON Decode Error: {str(e)}",
-            'result':{
-                }
+            'result': None
         }), 500
 
     # 전체 취약점 개수 계산

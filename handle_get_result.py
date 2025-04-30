@@ -14,8 +14,7 @@ def get_scan_result(file_id):
         return jsonify({
             'status': 404,
             'message': '해당 file_id에 대한 결과가 없습니다.',
-            'result':{
-                }
+            'result': None
         }), 404
     
     translated_result_file = record['translated_result_file']
@@ -24,8 +23,7 @@ def get_scan_result(file_id):
         return jsonify({
             'status': 404,
             'message': '분석 결과 파일이 존재하지 않습니다.',
-            'result':{
-                }
+            'result': None
         }), 404
     
     try:
@@ -40,6 +38,5 @@ def get_scan_result(file_id):
         return jsonify({
             'status': 500,
             'message': '파일 읽기 실패 :' + str(e),
-            'result':{
-                }
+            'result': None
         }), 500

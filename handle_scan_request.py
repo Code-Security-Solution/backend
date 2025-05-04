@@ -55,7 +55,12 @@ def scan_code():
     translated_result_file = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
 
     # 해당 폴더에서만 스캔 실행
-    command = [CLI_EXECUTABLE, 'scan', 'semgrep', upload_folder, result_file]
+    command = [
+        CLI_EXECUTABLE, 'scan', 'semgrep',
+        upload_folder, result_file,
+        '--no-pro-message',
+        '--translate', translated_result_file
+    ]
     # print(f"실행할 명령어: {' '.join(command)}")  # 명령어 확인 로그 - 디버그용
 
     try:

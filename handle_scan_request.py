@@ -80,15 +80,20 @@ def scan_code():
     translated_result_file = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
 
     # 해당 폴더에서만 스캔 실행
-    command = [CLI_EXECUTABLE, 'scan', 'semgrep', upload_folder, result_file]
+    command = [
+        CLI_EXECUTABLE, 'scan', 'semgrep',
+        upload_folder, result_file,
+        '--no-pro-message',
+        '--translate', translated_result_file
+     ]
     # print(f"실행할 명령어: {' '.join(command)}")  # 명령어 확인 로그 - 디버그용
 
     try:
         result = subprocess.run(command, capture_output=True, text=True, check=True, encoding='utf-8')
 
-        # print("CLI 실행 완료") - 디버그용
-        # print("STDOUT:", result.stdout)  # 표준 출력 로그 확인 - 디버그용
-        # print("STDERR:", result.stderr)  # 표준 에러 로그 확인 - 디버그용
+        #print("CLI 실행 완료") - 디버그용
+        #print("STDOUT:", result.stdout)  # 표준 출력 로그 확인 - 디버그용
+        #print("STDERR:", result.stderr)  # 표준 에러 로그 확인 - 디버그용
     except subprocess.CalledProcessError as e:
         print(f"CLI 실행 오류 발생: {e.stderr}")  # CLI 오류 로그 확인
         return jsonify({
@@ -114,7 +119,6 @@ def scan_code():
             'message': f'파일이 성공적으로 분석되었습니다. {db_message}',
             'result':{
                 'file_id': file_id,
-                'uploaded_files': file_paths,
-                'is_saved_to_db': is_authenticated
+                'uploaded_files': file_paths
                 }
         })

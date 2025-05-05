@@ -1,0 +1,140 @@
+from flask import jsonify
+import os
+import json
+from database import get_file_by_id
+
+with open('config.json', 'rt', encoding='utf-8') as file:
+    config = json.load(file)
+
+RESULT_DIR = 'results'
+
+def get_detailed_report(file_id):
+    """특정 파일의 취약점 상세 정보를 반환하는 엔드포인트"""
+
+    # 디버깅을 위한 print 문 추가
+    print(f"[DEBUG] get_detailed_report 실행 - file_id: {file_id}")
+
+    # 먼저 DB에서 조회 시도
+    record = get_file_by_id(file_id)
+    print(f"[DEBUG] DB 조회 결과: {record}")
+    translated_result_file = None
+
+    if record:
+        # DB에 기록이 있는 경우 (로그인한 사용자)
+        translated_result_file = record.get('translated_result_file')
+        print(f"[DEBUG] DB에서 찾은 파일 경로: {translated_result_file}")
+    else:
+        # DB에 기록이 없는 경우 (비로그인 사용자)
+        # 파일 시스템에서 직접 찾기
+        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}.json")
+        print(f"[DEBUG] 파일 시스템에서 찾는 경로: {temp_file_path}")
+        if os.path.exists(temp_file_path):
+            translated_result_file = temp_file_path
+            print(f"[DEBUG] 파일 존재함: {temp_file_path}")
+        else:
+            print(f"[DEBUG] 파일 존재하지 않음: {temp_file_path}")
+
+            # 결과 폴더의 모든 파일 목록 출력 (디버깅용)
+            print(f"[DEBUG] results 폴더의 파일 목록:")
+            for filename in os.listdir(RESULT_DIR):
+                print(f"  - {filename}")
+
+    # 파일을 찾지 못한 경우
+    if not translated_result_file:
+        print(f"[DEBUG] 파일 경로를 찾지 못함")
+        return jsonify({
+            "status": 404,
+            "message": "상세 보고서를 찾을 수 없습니다.",
+            "result": None
+        }), 404
+
+    # 파일이 존재하는지 확인
+    if not os.path.exists(translated_result_file):
+        print(f"[DEBUG] 파일이 존재하지 않음: {translated_result_file}")
+        return jsonify({
+            "status": 404,
+            "message": "JSON 파일을 찾을 수 없습니다.",
+            "result": None
+        }), 404
+
+    try:
+        with open(translated_result_file, "r", encoding="utf-8-sig") as f:
+            json_data = json.load(f)
+            print(f"[DEBUG] JSON 파일 로드 성공")
+            # 파일 내용 출력 (디버깅용)
+            print(f"[DEBUG] JSON 파일 내용 미리보기:")
+            print(json.dumps(json_data, ensure_ascii=False, indent=2)[:500] + "...")
+    except json.JSONDecodeError as e:
+        print(f"[DEBUG] JSON 디코딩 오류: {str(e)}")
+        return jsonify({
+            "status": 500,
+            "message": f"JSON 디코딩 오류: {str(e)}",
+            "result": None
+        }), 500
+
+    results = json_data.get("results", [])
+    print(f"[DEBUG] 결과 목록: {results}")
+    if not results:
+        print(f"[DEBUG] 결과 파일에 취약점 없음")
+        return jsonify({
+            "status": 404,
+            "message": "결과 파일에서 취약점을 찾을 수 없습니다.",
+            "result": None
+        }), 404
+
+    # 여기까지 왔다면 파일을 정상적으로 로드했다는 의미
+    print(f"[DEBUG] 파싱 시작. 취약점 개수: {len(results)}")
+
+    match = results[0]  # 첫 번째 취약점만 사용
+    file = match.get("path", "")
+    start = match.get("start", {})
+    end = match.get("end", {})
+    check_id = match.get("check_id", "")
+    message = match.get("extra", {}).get("message", "")
+    severity = match.get("extra", {}).get("severity", "")
+    code_snippet = match.get("lines", "").strip()
+    metadata = match.get("extra", {}).get("metadata", {})
+
+    references = metadata.get("references", [])
+    rule_url = metadata.get("semgrep.dev.rule.url")
+    if rule_url and rule_url not in references:
+        references.append(rule_url)
+
+    unique_id = f"{file}_{start.get('line', 0)}_{start.get('col', 0)}_{check_id}"
+
+    result = {
+        "user_id": None,
+        "id": unique_id,
+        "file": file,
+        "location": {
+            "start": {
+                "line": start.get("line"),
+                "column": start.get("col")
+            },
+            "end": {
+                "line": end.get("line"),
+                "column": end.get("col")
+            }
+        },
+        "type": check_id,
+        "message": message,
+        "severity": severity,
+        "suggestion": message,
+        "code_snippet": code_snippet,
+        "metadata": {
+            "cwe": metadata.get("cwe", []),
+            "category": metadata.get("category", ""),
+            "technology": metadata.get("technology", []),
+            "subcategory": metadata.get("subcategory", []),
+            "likelihood": metadata.get("likelihood", ""),
+            "impact": metadata.get("impact", ""),
+            "vulnerability_class": metadata.get("vulnerability_class", [])
+        },
+        "references": references
+    }
+
+    return jsonify({
+        "status": 200,
+        "message": "성공",
+        "result": result
+    }), 200

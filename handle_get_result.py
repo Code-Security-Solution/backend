@@ -27,7 +27,7 @@ def get_scan_result(file_id):
     else:
         # DB에 기록이 없는 경우 (비로그인 사용자)
         # 파일 시스템에서 직접 찾기
-        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
+        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}.json")
         if os.path.exists(temp_file_path):
             translated_result_file = temp_file_path
 
@@ -36,8 +36,7 @@ def get_scan_result(file_id):
         return jsonify({
             'status': 404,
             'message': '해당 file_id에 대한 결과가 없습니다.',
-            'result':{
-                }
+            'result':None
         }), 404
 
     # 파일이 존재하는지 확인
@@ -45,8 +44,7 @@ def get_scan_result(file_id):
         return jsonify({
             'status': 404,
             'message': '분석 결과 파일이 존재하지 않습니다.',
-            'result':{
-                }
+            'result':None
         }), 404
 
     try:
@@ -61,6 +59,5 @@ def get_scan_result(file_id):
         return jsonify({
             'status': 500,
             'message': '파일 읽기 실패: ' + str(e),
-            'result':{
-                }
+            'result':None
         }), 500

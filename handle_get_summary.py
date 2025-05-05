@@ -24,7 +24,7 @@ def get_summary_report(file_id):
     else:
         # DB에 기록이 없는 경우 (비로그인 사용자)
         # 파일 시스템에서 직접 찾기
-        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
+        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}.json")
         if os.path.exists(temp_file_path):
             json_file_path = temp_file_path
 
@@ -33,8 +33,7 @@ def get_summary_report(file_id):
         return jsonify({
             'status': 404,
             'message': '요약 보고서를 찾을 수 없습니다.',
-            'result':{
-                }
+            'result':None
         }), 404
 
     # 파일이 존재하는지 확인
@@ -42,8 +41,7 @@ def get_summary_report(file_id):
         return jsonify({
             'status': 404,
             'message': 'JSON 파일을 찾을 수 없습니다.',
-            'result':{
-                }
+            'result':None
         }), 404
 
     # JSON 파일 로드
@@ -54,8 +52,7 @@ def get_summary_report(file_id):
         return jsonify({
             'status': 500,
             'message': f"JSON 디코딩 오류: {str(e)}",
-            'result':{
-                }
+            'result':None
         }), 500
 
     # 전체 취약점 개수 계산

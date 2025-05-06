@@ -62,7 +62,7 @@ pip install flask pymongo pyjwt werkzeug
 ```
 
 ### 3. 설정
-1. `config.json` 설정
+1. `config.template.json` 설정
 ```json
 {
     "CLI_EXECUTABLE": "C:/path/to/Code_Nova_Guardian.exe",

@@ -29,8 +29,7 @@ def scan_code():
         return jsonify({
             'status': 400,
             'message': '소스코드 파일이 업로드되지 않았습니다.',
-            'result':{
-                }
+            'result': None
         }), 400
 
     files = request.files.getlist('source_code')  # 여러 개의 파일 받기
@@ -39,8 +38,7 @@ def scan_code():
         return jsonify({
             'status': 400,
             'message': '유효한 소스코드 파일이 없습니다.',
-            'result':{
-                }
+            'result': None
         }), 400
 
     # 로그인 여부 확인
@@ -85,7 +83,8 @@ def scan_code():
         upload_folder, result_file,
         '--no-pro-message',
         '--translate', translated_result_file
-     ]
+    ]
+
     # print(f"실행할 명령어: {' '.join(command)}")  # 명령어 확인 로그 - 디버그용
 
     try:
@@ -99,8 +98,7 @@ def scan_code():
         return jsonify({
             'status': 500,
             'message': '분석 엔진 실행 중 오류 발생.',
-            'result':{
-                }
+            'result': None
         }), 500
 
     # DB에 정보 저장 (인증된 사용자만)

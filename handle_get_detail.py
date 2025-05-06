@@ -58,6 +58,7 @@ def get_detailed_report(file_id):
         }), 404
 
     try:
+
         with open(translated_result_file, "r", encoding="utf-8-sig") as f:
             json_data = json.load(f)
             print(f"[DEBUG] JSON 파일 로드 성공")
@@ -73,6 +74,7 @@ def get_detailed_report(file_id):
         }), 500
 
     results = json_data.get("results", [])
+
     print(f"[DEBUG] 결과 목록: {results}")
     if not results:
         print(f"[DEBUG] 결과 파일에 취약점 없음")

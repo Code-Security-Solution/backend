@@ -1,5 +1,6 @@
 {
     "CLI_EXECUTABLE": "",
     "MONGO_URI": "mongodb://localhost:27017/",
-    "DB_NAME": "security_analysis"
+    "DB_NAME": "security_analysis",
+    "SECRET_KEY": ""
 }

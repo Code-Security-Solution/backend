@@ -101,7 +101,7 @@ python main.py
 | GET | `/download-source/<file_id>` | 원본 소스 파일 다운로드 | Yes |
 | GET | `/download-result/<file_id>` | 분석 결과 파일 다운로드 | Yes |
 | GET | `/download-translated-result/<file_id>` | 번역된 분석 결과 다운로드 | Yes |
-| GET | `/download-all-sources/<file_id>` | 모든 소스 파일 다운로드 (ZIP) | Yes |
+| GET | `/download-all-sources/<file_id>?fingerprint=<fingerprint>` | 모든 소스 파일 다운로드 (ZIP) | Yes |
 
 ## API 응답 형식
 
@@ -177,7 +177,7 @@ curl -X GET http://127.0.0.1:5000/scan-result/FILE_ID
 curl -X GET http://127.0.0.1:5000/summary-report/FILE_ID
 
 # 상세 분석 보고서 조회
-curl -X GET http://127.0.0.1:5000/detail-report/FILE_ID
+curl -X GET http://127.0.0.1:5000/detail-report/FILE_ID?fingerprint=<fingerprint>
 ```
 
 ## 주의사항

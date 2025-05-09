@@ -15,9 +15,14 @@ def my_files_handler(current_user):
 
     # MongoDB 데이터를 JSON 직렬화 가능한 형태로 변환
     serializable_files = []
+    all_file_names = []  # 모든 파일 이름을 저장할 리스트
+
     for file in files:
         serializable_file = {}
         for key, value in file.items():
+            # _id 필드는 제외
+            if key == '_id':
+                continue
             if isinstance(value, ObjectId):
                 serializable_file[key] = str(value)
             elif isinstance(value, list):
@@ -26,6 +31,18 @@ def my_files_handler(current_user):
             else:
                 serializable_file[key] = value
 
+        # 파일 경로에서 이름 추출
+        file_paths = serializable_file.get('file_paths', [])
+        uploaded_file_id = ""
+        for path in file_paths:
+            if os.path.exists(path):
+                file_name = os.path.basename(path)
+                uploaded_file_id += file_name
+                all_file_names.append(file_name)
+
+        # 파일 이름 정보 추가
+        serializable_file['uploaded_file_id'] = uploaded_file_id
+
         file_id = serializable_file.get('file_id')
         serializable_file['download_links'] = {
             'source_single': f'/download-source/{file_id}',
@@ -33,7 +50,8 @@ def my_files_handler(current_user):
             'result': f'/download-result/{file_id}',
             'translated_result': f'/download-translated-result/{file_id}',
             'view_summary': f'/summary-report/{file_id}',
-            'view_detail': f'/scan-result/{file_id}'
+            'view_result': f'/scan-result/{file_id}',
+            'view_detail': f'/detail-report/{file_id}'
         }
         serializable_files.append(serializable_file)
 
@@ -43,7 +61,8 @@ def my_files_handler(current_user):
         'result': {
             'user_email': user_email,
             'files_count': len(serializable_files),
-            'files': serializable_files
+            'files': serializable_files,
+            'files_list': all_file_names
         }
     }), 200
 

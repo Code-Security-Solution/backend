@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 import os
 import json
 from database import get_file_by_id
@@ -11,8 +11,11 @@ RESULT_DIR = 'results'
 def get_detailed_report(file_id):
     """특정 파일의 취약점 상세 정보를 반환하는 엔드포인트"""
 
+    # URL 파라미터에서 fingerprint 가져오기
+    target_fingerprint = request.args.get('fingerprint')
+    
     # 디버깅을 위한 print 문 추가
-    print(f"[DEBUG] get_detailed_report 실행 - file_id: {file_id}")
+    print(f"[DEBUG] get_detailed_report 실행 - file_id: {file_id}, target_fingerprint: {target_fingerprint}")
 
     # 먼저 DB에서 조회 시도
     record = get_file_by_id(file_id)
@@ -26,7 +29,7 @@ def get_detailed_report(file_id):
     else:
         # DB에 기록이 없는 경우 (비로그인 사용자)
         # 파일 시스템에서 직접 찾기
-        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}.json")
+        temp_file_path = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
         print(f"[DEBUG] 파일 시스템에서 찾는 경로: {temp_file_path}")
         if os.path.exists(temp_file_path):
             translated_result_file = temp_file_path
@@ -58,7 +61,6 @@ def get_detailed_report(file_id):
         }), 404
 
     try:
-
         with open(translated_result_file, "r", encoding="utf-8-sig") as f:
             json_data = json.load(f)
             print(f"[DEBUG] JSON 파일 로드 성공")
@@ -87,7 +89,19 @@ def get_detailed_report(file_id):
     # 여기까지 왔다면 파일을 정상적으로 로드했다는 의미
     print(f"[DEBUG] 파싱 시작. 취약점 개수: {len(results)}")
 
-    match = results[0]  # 첫 번째 취약점만 사용
+    # target_fingerprint가 지정된 경우 해당 fingerprint의 취약점만 필터링
+    if target_fingerprint:
+        filtered_results = [r for r in results if r.get("extra", {}).get("fingerprint") == target_fingerprint]
+        if not filtered_results:
+            return jsonify({
+                "status": 404,
+                "message": f"지문 '{target_fingerprint}'에 대한 취약점을 찾을 수 없습니다.",
+                "result": None
+            }), 404
+        match = filtered_results[0]
+    else:
+        match = results[0]  # fingerprint가 지정되지 않은 경우 첫 번째 취약점 사용
+
     file = match.get("path", "")
     start = match.get("start", {})
     end = match.get("end", {})

@@ -92,7 +92,7 @@ python main.py
 | POST | `/scan` | 소스 코드 분석 요청 | Optional |
 | GET | `/scan-result/<file_id>` | 분석 결과 조회 | No |
 | GET | `/summary-report/<file_id>` | 요약 보고서 조회 | No |
-| GET | `/detail-report/<file_id>` | 상세 분석 보고서 조회 | No |
+| GET | `/detail-report/<file_id>?fingerprint=<fingerprint>` | 상세 분석 보고서 조회 | No |
 
 ### 파일 관리 API
 | Method | Endpoint | Description | Auth Required |
@@ -101,7 +101,7 @@ python main.py
 | GET | `/download-source/<file_id>` | 원본 소스 파일 다운로드 | Yes |
 | GET | `/download-result/<file_id>` | 분석 결과 파일 다운로드 | Yes |
 | GET | `/download-translated-result/<file_id>` | 번역된 분석 결과 다운로드 | Yes |
-| GET | `/download-all-sources/<file_id>?fingerprint=<fingerprint>` | 모든 소스 파일 다운로드 (ZIP) | Yes |
+| GET | `/download-all-sources/<file_id>` | 모든 소스 파일 다운로드 (ZIP) | Yes |
 
 ## API 응답 형식
 

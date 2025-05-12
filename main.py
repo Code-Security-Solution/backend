@@ -31,6 +31,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config.get('SECRET_KEY')
 app.json_encoder = MongoJSONEncoder  # 커스텀 JSONEncoder 설정
 
+# EC2 health check
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'Healthy'}), 200
+
 # URL 라우팅 설정
 app.add_url_rule('/scan', view_func=scan_code, methods=['POST'])
 app.add_url_rule('/scan-result/<file_id>', view_func=get_scan_result, methods=['GET'])

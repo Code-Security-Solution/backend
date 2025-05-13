@@ -31,7 +31,7 @@ class MongoJSONEncoder(json.JSONEncoder):
 app = Flask(__name__)
 
 # CORS 설정
-CORS(app, resources={
+CORS(app, supports_credentials=True, resources={
     r"/*": {
         "origins": ["http://localhost:5173", "https://www.codenovaguardian.site"],  # 프론트엔드 주소
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

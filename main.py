@@ -5,6 +5,7 @@ import datetime
 import os
 import zipfile
 import tempfile
+from flask_cors import CORS
 from handle_scan_request import scan_code
 from handle_get_result import get_scan_result
 from handle_get_summary import get_summary_report
@@ -28,6 +29,16 @@ class MongoJSONEncoder(json.JSONEncoder):
             return super(MongoJSONEncoder, self).default(obj)
 
 app = Flask(__name__)
+
+# CORS 설정
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:5173", "https://www.codenovaguardian.site"],  # 프론트엔드 주소
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "x-access-token"]
+    }
+})
+
 app.config['SECRET_KEY'] = config.get('SECRET_KEY')
 app.json_encoder = MongoJSONEncoder  # 커스텀 JSONEncoder 설정
 

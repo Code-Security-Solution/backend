@@ -73,7 +73,7 @@ def get_summary_report(file_id):
     vulnerabilities = []
     for item in results:
         vulnerabilities.append({
-            "id": item.get("fingerprint"),
+            "id": item.get("extra", {}).get("fingerprint"),
             "file": item.get("path"),
             "line": item.get("start", {}).get("line"),
             "column": item.get("start", {}).get("col"),

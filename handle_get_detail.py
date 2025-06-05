@@ -111,6 +111,52 @@ def get_detailed_report(file_id):
     code_snippet = match.get("lines", "").strip()
     metadata = match.get("extra", {}).get("metadata", {})
 
+    # fingerprint를 사용하여 파일 찾기
+    vulnerable_code = ""
+    try:
+        fingerprint = match.get("extra", {}).get("fingerprint")
+        if fingerprint:
+            # translated.json 파일 읽기
+            translated_file = os.path.join(RESULT_DIR, f"{file_id}_translated.json")
+            print(f"[DEBUG] 읽을 translated 파일: {translated_file}")
+            
+            if os.path.exists(translated_file):
+                with open(translated_file, 'r', encoding='utf-8-sig') as f:
+                    translated_data = json.load(f)
+                
+                # fingerprint에 해당하는 결과 찾기
+                target_result = None
+                for result in translated_data.get("results", []):
+                    if result.get("extra", {}).get("fingerprint") == fingerprint:
+                        target_result = result
+                        break
+                
+                if target_result:
+                    # uploads 디렉토리에서 실제 파일 읽기
+                    uploads_dir = os.path.join("uploads", file_id)
+                    source_file = os.path.join(uploads_dir, target_result.get("path", ""))
+                    print(f"[DEBUG] 읽을 uploads 파일: {source_file}")
+                    
+                    if os.path.exists(source_file):
+                        with open(source_file, 'r', encoding='utf-8-sig') as f:
+                            vulnerable_code = f.read()
+                        print(f"[DEBUG] 파일 읽기 성공")
+                    else:
+                        print(f"[DEBUG] uploads에서 파일을 찾을 수 없음: {source_file}")
+                        vulnerable_code = code_snippet
+                else:
+                    print(f"[DEBUG] translated.json에서 fingerprint를 찾을 수 없음: {fingerprint}")
+                    vulnerable_code = code_snippet
+            else:
+                print(f"[DEBUG] translated.json 파일을 찾을 수 없음: {translated_file}")
+                vulnerable_code = code_snippet
+        else:
+            print("[DEBUG] fingerprint를 찾을 수 없음")
+            vulnerable_code = code_snippet
+    except Exception as e:
+        print(f"[DEBUG] 원본 코드 읽기 실패: {str(e)}")
+        vulnerable_code = code_snippet  # 실패시 code_snippet 사용
+
     references = metadata.get("references", [])
     rule_url = metadata.get("semgrep.dev.rule.url")
     if rule_url and rule_url not in references:
@@ -137,6 +183,7 @@ def get_detailed_report(file_id):
         "severity": severity,
         "suggestion": message,
         "code_snippet": code_snippet,
+        "code": vulnerable_code,  # uploads에서 읽은 소스 파일의 내용
         "metadata": {
             "cwe": metadata.get("cwe", []),
             "category": metadata.get("category", ""),

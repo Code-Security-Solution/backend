@@ -60,9 +60,9 @@ def get_summary_report(file_id):
     total_vulnerabilities = len(results)
 
     # 심각도별 취약점 개수 계산
-    severity_summary = {"critical": 0, "error": 0, "warning": 0, "info": 0}
+    severity_summary = {"CRITICAL": 0, "ERROR": 0, "WARNING": 0, "INFO": 0}
     for item in results:
-        severity = item.get("extra", {}).get("severity", "").lower()
+        severity = item.get("extra", {}).get("severity", "")
         if severity in severity_summary:
             severity_summary[severity] += 1
 

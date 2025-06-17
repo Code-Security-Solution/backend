@@ -1,7 +1,7 @@
 from flask import jsonify, request
 import os
 import json
-from database import get_file_by_id
+from database import get_file_by_id, save_detailed_report
 
 with open('config.json', 'rt', encoding='utf-8') as file:
     config = json.load(file)
@@ -123,7 +123,7 @@ def get_detailed_report(file_id):
             if os.path.exists(translated_file):
                 with open(translated_file, 'r', encoding='utf-8-sig') as f:
                     translated_data = json.load(f)
-                
+
                 # fingerprint에 해당하는 결과 찾기
                 target_result = None
                 for result in translated_data.get("results", []):
@@ -164,6 +164,13 @@ def get_detailed_report(file_id):
 
     unique_id = f"{file}_{start.get('line', 0)}_{start.get('col', 0)}_{check_id}"
 
+    # AI 리포트 정보 확인
+    ai_report = False
+    ai_report_contents = None
+    if record and "ai_reports" in record:
+        ai_report = True
+        ai_report_contents = record.get("ai_reports", {})
+
     result = {
         "user_id": None,
         "id": unique_id,
@@ -193,8 +200,14 @@ def get_detailed_report(file_id):
             "impact": metadata.get("impact", ""),
             "vulnerability_class": metadata.get("vulnerability_class", [])
         },
-        "references": references
+        "references": references,
+        "ai_report": ai_report,
+        "ai_report_contents": ai_report_contents
     }
+
+    # DB에 상세 보고서 저장
+    if record:
+        save_detailed_report(file_id, result)
 
     return jsonify({
         "status": 200,

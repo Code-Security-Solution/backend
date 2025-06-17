@@ -25,9 +25,12 @@ db = client[DB_NAME]
 # 컬렉션 초기화 및 인덱스 설정
 users_collection = db["users"]
 files_collection = db["files"]
+detailed_reports_collection = db["detailed_reports"]  # 상세 보고서를 위한 새로운 컬렉션
 
 # email 필드에 유니크 인덱스 설정
 users_collection.create_index("email", unique=True)
+# file_id에 인덱스 설정
+detailed_reports_collection.create_index("file_id")
 
 # 파일 업로드 기록 저장
 def insert_scan_record(user_email, file_id, file_paths, result_file, translated_result_file):
@@ -83,3 +86,40 @@ def get_scan_result_by_id(file_id, email=None):
         "result_file": file_info.get("result_file"),
         "translated_result_file": file_info.get("translated_result_file")
     }
+
+def update_file_with_ai_report(file_id, fingerprint, ai_report):
+    """AI 레포트를 파일 정보에 업데이트"""
+    files_collection.update_one(
+        {"file_id": file_id},
+        {
+            "$set": {
+                f"ai_reports.{fingerprint}": ai_report
+            }
+        }
+    )
+
+def save_detailed_report(file_id, detailed_report):
+    """상세 보고서를 새로운 컬렉션에 저장"""
+    detailed_reports_collection.update_one(
+        {"file_id": file_id},
+        {
+            "$set": {
+                "file_id": file_id,
+                "report": detailed_report,
+                "created_at": db.command("serverStatus")["localTime"]
+            }
+        },
+        upsert=True  # 문서가 없으면 새로 생성
+    )
+
+def reset_ai_report(file_id):
+    """AI 리포트 상태를 초기화"""
+    detailed_reports_collection.update_one(
+        {"file_id": file_id},
+        {
+            "$set": {
+                "ai_report": False,
+                "ai_report_contents": None
+            }
+        }
+    )

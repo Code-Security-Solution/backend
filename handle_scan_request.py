@@ -57,6 +57,7 @@ def scan_code():
             if current_user:
                 user_email = current_user['email']
                 is_authenticated = True  # 인증 성공
+                print(f"인증된 사용자: {user_email}")
         except Exception as e:
             print(f"토큰 검증 실패 (무시하고 진행): {str(e)}")
             # 토큰이 유효하지 않아도 계속 진행
@@ -105,6 +106,7 @@ def scan_code():
     if is_authenticated and user_email:
         insert_scan_record(user_email, file_id, file_paths, result_file, translated_result_file)
         db_message = "파일이 DB에 저장되었습니다."
+        print(f"파일이 DB에 저장되었습니다. {db_message}")
     else:
         db_message = "익명 사용자의 분석 결과는 DB에 저장되지 않습니다."
 

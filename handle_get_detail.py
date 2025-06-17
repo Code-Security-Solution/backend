@@ -1,7 +1,7 @@
 from flask import jsonify, request
 import os
 import json
-from database import get_file_by_id, save_detailed_report
+from database import get_file_by_id, save_detailed_report, get_detailed_report as get_db_detailed_report
 
 with open('config.json', 'rt', encoding='utf-8') as file:
     config = json.load(file)
@@ -167,7 +167,14 @@ def get_detailed_report(file_id):
     # AI 리포트 정보 확인
     ai_report = False
     ai_report_contents = None
-    if record and "ai_reports" in record:
+    
+    # detailed_reports 컬렉션에서 AI 리포트 정보 확인
+    detailed_report = get_db_detailed_report(file_id, target_fingerprint if target_fingerprint else fingerprint)
+    if detailed_report and detailed_report.get('ai_report'):
+        ai_report = True
+        ai_report_contents = detailed_report.get('ai_report_contents')
+    # files 컬렉션에서도 확인 (이전 버전과의 호환성을 위해)
+    elif record and "ai_reports" in record:
         ai_report = True
         ai_report_contents = record.get("ai_reports", {})
 

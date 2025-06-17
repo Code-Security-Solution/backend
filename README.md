@@ -178,6 +178,10 @@ curl -X GET http://127.0.0.1:5000/summary-report/FILE_ID
 
 # 상세 분석 보고서 조회
 curl -X GET http://127.0.0.1:5000/detail-report/FILE_ID?fingerprint=<fingerprint>
+
+# AI 리포트 생성
+curl -X POST http://127.0.0.1:5000/ai-report/FILE_ID?fingerprint=<fingerprint> \
+  -H "x-access-token: YOUR_TOKEN"
 ```
 
 ## 주의사항

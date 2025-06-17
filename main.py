@@ -55,8 +55,8 @@ app.add_url_rule('/summary-report/<file_id>', view_func=get_summary_report, meth
 app.add_url_rule('/detail-report/<file_id>', view_func=get_detailed_report, methods=['GET'])
 
 # AI 레포트 관련 라우팅
-app.add_url_rule('/ai-report/<file_id>', view_func=generate_ai_report, methods=['POST'])
-app.add_url_rule('/ai-report/<file_id>', view_func=get_ai_report, methods=['GET'])
+app.add_url_rule('/ai-report/<file_id>/<fingerprint>', view_func=generate_ai_report, methods=['POST'])
+app.add_url_rule('/ai-report/<file_id>/<fingerprint>', view_func=get_ai_report, methods=['GET'])
 
 # 인증 관련 라우팅
 app.add_url_rule('/register', view_func=register_user_handler, methods=['POST'])
@@ -76,7 +76,15 @@ app.add_url_rule('/download-all-sources/<file_id>', view_func=download_all_sourc
 def reset_ai_report_handler(current_user, file_id):
     """AI 리포트 상태를 초기화하는 엔드포인트"""
     try:
-        reset_ai_report(file_id)
+        fingerprint = request.args.get('fingerprint')
+        if not fingerprint:
+            return jsonify({
+                'status': 400,
+                'message': 'fingerprint 파라미터가 필요합니다.',
+                'result': None
+            }), 400
+
+        reset_ai_report(file_id, fingerprint)
         return jsonify({
             'status': 200,
             'message': 'AI 리포트가 성공적으로 초기화되었습니다.',
@@ -86,6 +94,56 @@ def reset_ai_report_handler(current_user, file_id):
         return jsonify({
             'status': 500,
             'message': f'AI 리포트 초기화 중 오류 발생: {str(e)}',
+            'result': None
+        }), 500
+
+# AI 리포트 생성 엔드포인트
+@app.route('/ai-report/<file_id>', methods=['POST'])
+@token_required
+def generate_ai_report_handler(current_user, file_id):
+    try:
+        fingerprint = request.args.get('fingerprint')
+        if not fingerprint:
+            return jsonify({
+                'status': 400,
+                'message': 'fingerprint 파라미터가 필요합니다.',
+                'result': None
+            }), 400
+
+        # 올바른 인자 전달
+        result = generate_ai_report(current_user, file_id, fingerprint)
+        return jsonify(result), result.get('status', 200)
+    except Exception as e:
+        return jsonify({
+            'status': 500,
+            'message': f'AI 리포트 생성 중 오류 발생: {str(e)}',
+            'result': None
+        }), 500
+
+# AI 리포트 조회 엔드포인트
+@app.route('/ai-report/<file_id>', methods=['GET'])
+@token_required
+def get_ai_report_handler(current_user, file_id):
+    """AI 리포트를 조회하는 엔드포인트"""
+    try:
+        fingerprint = request.args.get('fingerprint')
+        if not fingerprint:
+            return jsonify({
+                'status': 400,
+                'message': 'fingerprint 파라미터가 필요합니다.',
+                'result': None
+            }), 400
+
+        result = get_ai_report(file_id, fingerprint)
+        return jsonify({
+            'status': 200,
+            'message': 'AI 리포트를 성공적으로 조회했습니다.',
+            'result': result
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 500,
+            'message': f'AI 리포트 조회 중 오류 발생: {str(e)}',
             'result': None
         }), 500
 

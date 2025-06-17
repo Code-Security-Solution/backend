@@ -202,7 +202,8 @@ def get_detailed_report(file_id):
         },
         "references": references,
         "ai_report": ai_report,
-        "ai_report_contents": ai_report_contents
+        "ai_report_contents": ai_report_contents,
+        "fingerprint": target_fingerprint if target_fingerprint else fingerprint
     }
 
     # DB에 상세 보고서 저장

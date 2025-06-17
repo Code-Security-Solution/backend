@@ -99,27 +99,109 @@ def update_file_with_ai_report(file_id, fingerprint, ai_report):
     )
 
 def save_detailed_report(file_id, detailed_report):
-    """상세 보고서를 새로운 컬렉션에 저장"""
-    detailed_reports_collection.update_one(
-        {"file_id": file_id},
-        {
-            "$set": {
-                "file_id": file_id,
-                "report": detailed_report,
-                "created_at": db.command("serverStatus")["localTime"]
-            }
-        },
-        upsert=True  # 문서가 없으면 새로 생성
-    )
+    """상세 리포트를 MongoDB에 저장 (필수 필드 보장, fingerprint는 반드시 외부에서 받아야 함)"""
+    try:
+        # fingerprint가 반드시 있어야 함
+        if 'fingerprint' not in detailed_report or not detailed_report['fingerprint']:
+            raise ValueError('fingerprint 값이 반드시 필요합니다.')
+        # 필수 필드 목록
+        required_fields = [
+            'file_id', 'fingerprint', 'ai_report', 'ai_report_contents', 'code', 'file', 'id', 'location',
+            'message', 'metadata', 'references', 'severity', 'suggestion', 'type', 'user_id', 'created_at'
+        ]
+        # 기본값 세팅
+        for field in required_fields:
+            if field not in detailed_report:
+                if field == 'ai_report':
+                    detailed_report[field] = False
+                elif field == 'ai_report_contents':
+                    detailed_report[field] = None
+                elif field == 'created_at':
+                    detailed_report[field] = datetime.utcnow()
+                else:
+                    detailed_report[field] = None
+        detailed_report['file_id'] = file_id
+        # upsert: created_at은 새 문서에만 추가
+        existing = detailed_reports_collection.find_one({'file_id': file_id, 'fingerprint': detailed_report['fingerprint']})
+        if existing:
+            # 기존 문서면 created_at을 덮어쓰지 않음
+            detailed_report['created_at'] = existing.get('created_at', detailed_report['created_at'])
+        result = detailed_reports_collection.update_one(
+            {
+                'file_id': file_id,
+                'fingerprint': detailed_report['fingerprint']
+            },
+            {'$set': detailed_report},
+            upsert=True
+        )
+        return result.acknowledged
+    except Exception as e:
+        print(f"Error saving detailed report: {str(e)}")
+        return False
 
-def reset_ai_report(file_id):
-    """AI 리포트 상태를 초기화"""
-    detailed_reports_collection.update_one(
-        {"file_id": file_id},
-        {
-            "$set": {
-                "ai_report": False,
-                "ai_report_contents": None
+def get_detailed_report(file_id, fingerprint):
+    """MongoDB에서 상세 리포트 조회"""
+    try:
+        report = detailed_reports_collection.find_one({
+            'file_id': file_id,
+            'fingerprint': fingerprint
+        })
+        return report
+    except Exception as e:
+        print(f"Error getting detailed report: {str(e)}")
+        return None
+
+def reset_ai_report(file_id, fingerprint):
+    """AI 리포트 상태 초기화"""
+    try:
+        result = detailed_reports_collection.update_one(
+            {
+                'file_id': file_id,
+                'fingerprint': fingerprint
+            },
+            {
+                '$set': {
+                    'ai_report': False,
+                    'ai_report_contents': None
+                }
             }
-        }
-    )
+        )
+        return result.acknowledged
+    except Exception as e:
+        print(f"Error resetting AI report: {str(e)}")
+        return False
+
+def save_ai_report(file_id, fingerprint, ai_report_contents):
+    """AI 리포트 저장"""
+    try:
+        result = detailed_reports_collection.update_one(
+            {
+                'file_id': file_id,
+                'fingerprint': fingerprint
+            },
+            {
+                '$set': {
+                    'ai_report': True,
+                    'ai_report_contents': ai_report_contents
+                }
+            }
+        )
+        return result.acknowledged
+    except Exception as e:
+        print(f"Error saving AI report: {str(e)}")
+        return False
+
+def get_ai_report(file_id, fingerprint):
+    """AI 리포트 조회"""
+    try:
+        report = detailed_reports_collection.find_one(
+            {
+                'file_id': file_id,
+                'fingerprint': fingerprint
+            },
+            {'ai_report': 1, 'ai_report_contents': 1, '_id': 0}
+        )
+        return report
+    except Exception as e:
+        print(f"Error getting AI report: {str(e)}")
+        return None

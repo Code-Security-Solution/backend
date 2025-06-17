@@ -2,5 +2,6 @@
     "CLI_EXECUTABLE": "",
     "MONGO_URI": "mongodb://localhost:27017/",
     "DB_NAME": "security_analysis",
+    "OPENAI_API_KEY": "",
     "SECRET_KEY": ""
 }

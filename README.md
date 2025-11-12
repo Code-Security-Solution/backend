@@ -1,5 +1,3 @@
-***
-
 # Code Nova Guardian Backend
 
 > AI 기반 소스 코드 보안 취약점 분석 시스템의 백엔드 API 서버
@@ -291,7 +289,3 @@ curl -X GET "http://localhost:5000/ai-report/abc123def456/fingerprint_value" \
 - **CORS 허용 도메인**: `https://www.codenovaguardian.site`
 - **호스트**: `0.0.0.0:5000` (EC2 인스턴스)
 - **Health Check**: `/health` 엔드포인트로 서버 상태 모니터링
-
-***
-
-**Built with ❤️ by Code Security Solution Team**

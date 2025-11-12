@@ -4,7 +4,7 @@
 
 ## 📋 프로젝트 개요
 
-Code Nova Guardian Backend는 소스 코드의 보안 취약점을 자동으로 분석하고, AI를 활용하여 상세한 취약점 분석 리포트를 제공하는 RESTful API 서버입니다. Code Nova Guardian CLI 분석 도구와 연동하여 C/C++ 코드의 보안 취약점을 탐지하고, OpenAI GPT 모델을 통해 취약점에 대한 분석, 수정 방안, 예방책을 제시합니다.
+Code Nova Guardian Backend는 소스 코드의 보안 취약점을 자동으로 분석하고, AI를 활용하여 상세한 취약점 분석 리포트를 제공하는 RESTful API 서버입니다. Code Nova Guardian CLI 분석 도구와 연동하여 다양한 코드의 보안 취약점을 탐지하고, OpenAI GPT 모델을 통해 취약점에 대한 분석, 수정 방안, 예방책을 제시합니다.
 
 ## ✨ 주요 기능
 

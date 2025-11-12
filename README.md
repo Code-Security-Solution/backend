@@ -1,5 +1,3 @@
-[Code-Security-Solution/backend](https://github.com/Code-Security-Solution/backend) 레포지토리를 분석하여 개선된 README 파일을 작성했습니다.
-
 ***
 
 # Code Nova Guardian Backend
